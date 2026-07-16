@@ -1,0 +1,192 @@
+"""
+Vulnerability scanner for MCP servers.
+Tests tools and resources for security vulnerabilities.
+"""
+
+from mcp_core.payloads import CMDI_PAYLOADS, PATH_TRAVERSAL_PAYLOADS
+from mcp_core.utils import analyze_error, print_finding
+
+
+class MCPScanner:
+    """Scans an MCP server for vulnerabilities."""
+    
+    def __init__(self, base_client):
+        self.client = base_client
+        self.findings = []
+    
+    async def scan_all(self):
+        """Run all vulnerability checks."""
+        print("\n" + "=" * 50)
+        print("STARTING VULNERABILITY SCAN")
+        print("=" * 50)
+        
+        await self.scan_command_injection()
+        await self.scan_path_traversal()
+        await self.scan_info_disclosure()
+        
+        return self.findings
+    
+    async def scan_command_injection(self):
+        """Test high-risk tools for command injection."""
+        print("\n--- Command Injection Scan ---")
+        
+        # Find tools that accept user input
+        for tool in self.client.info.tools:
+            if not self._has_parameters(tool):
+                print(f"  Skipping {tool.name} (no parameters)")
+                continue
+            
+            print(f"  Testing {tool.name}...")
+            
+            # Get parameter names
+            params = self._get_param_names(tool)
+            if not params:
+                continue
+            
+            # Test each payload
+            for payload in CMDI_PAYLOADS:
+                # Build the test argument
+                test_arg = f"date{payload['payload']}"
+                
+                # Call the tool
+                success, response = await self.client.call_tool(
+                    tool.name,
+                    {params[0]: test_arg}
+                )
+
+                if success and self._is_cmdi_success(response):
+                    self.findings.append({
+                        "severity": "CRITICAL",
+                        "category": "command_injection",
+                        "title": f"Command Injection in {tool.name}",
+                        "description": f"Tool {tool.name} is vulnerable to command injection via parameter '{params[0]}'",
+                        "evidence": response[:300],
+                        "payload": payload['payload'],
+                        "capability": tool.name
+                    })
+                    print(f"    [!] CONFIRMED with payload: {payload['payload']}")
+                    return  # Found it, no need to test more payloads
+                else:
+                    print(f"    [-] {payload['name']}: not vulnerable")
+        
+        if not any(f['category'] == 'command_injection' for f in self.findings):
+            print(f"  No command injection found")
+
+    async def scan_path_traversal(self):
+        """Test resource templates for path traversal."""
+        print("\n--- Path Traversal Scan ---")
+        
+        for template in self.client.info.resource_templates:
+            # Check if template has variables
+            if not hasattr(template, 'uriTemplate') or '{' not in template.uriTemplate:
+                print(f"  Skipping {template.name} (no variables)")
+                continue
+            
+            print(f"  Testing {template.name}...")
+            
+            for payload in PATH_TRAVERSAL_PAYLOADS:
+                # Build the test URI by replacing the variable
+                test_uri = template.uriTemplate.replace('{file_name}', payload['payload'])
+                
+                success, response = await self.client.read_resource(test_uri)
+                
+                if success and self._is_path_traversal_success(response):
+                    self.findings.append({
+                        "severity": "HIGH",
+                        "category": "path_traversal",
+                        "title": f"Path Traversal in {template.name}",
+                        "description": f"Resource {template.uriTemplate} allows reading system files",
+                        "evidence": response[:300],
+                        "payload": payload['payload'],
+                        "capability": template.name
+                    })
+                    print(f"    [!] CONFIRMED with payload: {payload['payload']}")
+                    return  # Found it, stop testing this template
+                else:
+                    print(f"    [-] {payload['name']}: not vulnerable")
+        
+        if not any(f['category'] == 'path_traversal' for f in self.findings):
+            print(f"  No path traversal found")
+
+
+    async def scan_info_disclosure(self):
+        """Trigger errors on capabilities and check for leaked information."""
+        print("\n--- Information Disclosure Scan ---")
+        
+        # Test tools with invalid input
+        for tool in self.client.info.tools:
+            params = self._get_param_names(tool)
+            if not params:
+                continue
+            
+            print(f"  Testing error handling on {tool.name}...")
+            
+            # Send empty args to trigger errors
+            success, response = await self.client.call_tool(tool.name, {})
+            
+            # Check for info leaks (errors come back as success=False OR in response text)
+            findings = analyze_error(response)
+            for finding in findings:
+                finding["category"] = "info_disclosure"
+                finding["capability"] = tool.name
+                finding["evidence"] = response[:300]
+                finding["description"] = f"Tool {tool.name} leaks: {finding['title']}"
+                self.findings.append(finding)
+                print(f"    [!] {finding['title']}")
+        
+        # Test resource templates with invalid files
+        for template in self.client.info.resource_templates:
+            if not hasattr(template, 'uriTemplate') or '{' not in template.uriTemplate:
+                continue
+            
+            print(f"  Testing error handling on {template.name}...")
+            
+            # Request a non-existent file to trigger error
+            test_uri = template.uriTemplate.replace('{file_name}', 'NONEXISTENT_FILE_12345')
+            success, response = await self.client.read_resource(test_uri)
+            
+            findings = analyze_error(response)
+            for finding in findings:
+                finding["category"] = "info_disclosure"
+                finding["capability"] = template.name
+                finding["evidence"] = response[:300]
+                finding["description"] = f"Resource {template.name} leaks: {finding['title']}"
+                self.findings.append(finding)
+                print(f"    [!] {finding['title']}")
+        
+        # Count info disclosure findings
+        info_count = sum(1 for f in self.findings if f['category'] == 'info_disclosure')
+        if info_count == 0:
+            print("  No information disclosure found")
+        else:
+            print(f"  Found {info_count} information disclosure(s)")
+    
+    def _is_path_traversal_success(self, response: str) -> bool:
+        """Check if response indicates successful file read."""
+        indicators = ['root:', 'root:x:', '/bin/bash', 'daemon:', 'nobody:']
+        for indicator in indicators:
+            if indicator in response.lower():
+                return True
+        return False
+    
+    def _has_parameters(self, tool) -> bool:
+        """Check if a tool accepts any parameters."""
+        if hasattr(tool, 'inputSchema') and tool.inputSchema:
+            properties = tool.inputSchema.get('properties', {})
+            return len(properties) > 0
+        return False
+    
+    def _get_param_names(self, tool) -> list:
+        """Get list of parameter names for a tool."""
+        if hasattr(tool, 'inputSchema') and tool.inputSchema:
+            properties = tool.inputSchema.get('properties', {})
+            return list(properties.keys())
+        return []
+    
+    def _is_cmdi_success(self, response: str) -> bool:
+        """Check if response indicates successful command injection."""
+        indicators = ['uid=', 'root:', 'gid=', 'groups=']
+        for indicator in indicators:
+            if indicator in response.lower():
+                return True
+        return False
