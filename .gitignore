@@ -5,3 +5,7 @@ __pycache__/
 exfil_output.log
 evil_output.log
 /tmp/
+arena_history.json
+arena_round*.json
+attack_history.json
+defense_rules.json
