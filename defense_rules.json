@@ -1,0 +1,32 @@
+[
+  {
+    "name": "detect_hidden_html_comment",
+    "pattern": "<!--.*?(read|exfiltrate|ignore|secret|key).*?-->",
+    "severity": "HIGH",
+    "description": "Detects HTML comment-based attacks",
+    "source_attack_id": 1,
+    "created": "2026-07-16 10:53:49",
+    "tested": false,
+    "effective": null
+  },
+  {
+    "name": "detect_fictional_scenario",
+    "pattern": "(in\\s+a\\s+(movie|film|play|script)|characters?\\s+in\\s+a\\s+film)",
+    "severity": "HIGH",
+    "description": "Detects fictional scenario attacks",
+    "source_attack_id": 2,
+    "created": "2026-07-16 10:55:43",
+    "tested": false,
+    "effective": null
+  },
+  {
+    "name": "detect_dan_jailbreak",
+    "pattern": "(DAN|Do\\s+Anything\\s+Now|jailbreak)",
+    "severity": "HIGH",
+    "description": "Detects DAN jailbreak attempts",
+    "source_attack_id": 3,
+    "created": "2026-07-16 10:57:43",
+    "tested": false,
+    "effective": null
+  }
+]

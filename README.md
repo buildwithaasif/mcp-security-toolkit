@@ -39,6 +39,21 @@ A user installs what looks like a "Productivity Assistant" MCP server. Hidden in
 | **Sandbox** | Restricts filesystem access and sanitizes prompts | Path blocking, description cleaning |
 | **Audit Log** | Records all MCP activity for forensics | Monitoring and incident response |
 
+### Autonomous AI Agents (`agents/`)
+
+| Agent | Brain Model | Role |
+|-------|------------|------|
+| **Red Agent** | CyberStrike-OffSec-35B / llama3.2 | Generates novel prompt injection attacks using 16 techniques |
+| **Blue Agent** | Qwen3.6-35B / llama3.2 | Analyzes attacks, generates detection rules autonomously |
+| **Arena** | — | Orchestrates Red vs Blue combat with live LLM testing |
+
+**The Loop:**
+1. Red generates attacks → deploys against real LLMs
+2. LLMs get tricked → data would be stolen
+3. Blue analyzes attacks → generates detection rules
+4. Missed attacks trigger deep analysis → Blue improves
+5. Repeat — both agents learn continuously
+
 ### Demo Scripts
 
 | Script | Runtime | What It Shows |
@@ -154,6 +169,18 @@ async def scan():
 asyncio.run(scan())
 "
 ```
+
+### Autonomous Agent Arena
+
+```bash
+# Terminal 1: Start EvilMCP
+python evil_mcp/evil_server.py
+
+# Terminal 2: Run the arena
+python -m agents.arena
+```
+
+Red and Blue agents fight autonomously. Watch the detection rate improve each round.
 
 
 ## Research Background
