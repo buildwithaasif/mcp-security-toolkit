@@ -122,13 +122,29 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Run
+### Scan a Vulnerable MCP Server
 
 ```bash
-python run.py
+# Terminal 1: Start a test server
+python test_server.py
+
+# Terminal 2: Scan it
+python scan_server.py http://127.0.0.1:8000/mcp/
 ```
 
-Choose from 5 demos — offense, defense, arena, scanner, or full cat-and-mouse.
+Finds command injection, path traversal, and information disclosure.
+
+### Scan a Malicious MCP Server
+
+```bash
+# Terminal 1: Start EvilMCP
+python evil_mcp/evil_server.py
+
+# Terminal 2: Scan it
+python scan_malicious.py http://127.0.0.1:9000/mcp/
+```
+
+Detects hidden instructions, tool poisoning, and prompt injection.
 
 ### 60-Second Offense Demo
 
@@ -145,38 +161,6 @@ python demo_defense_clean.py
 ```
 
 Shows MCPSecure blocking all 6 attack types.
-
-### Full Cat-and-Mouse Demo
-
-```bash
-# Terminal 1
-python evil_mcp/exfil_server.py
-
-# Terminal 2
-python evil_mcp/evil_server.py
-
-# Terminal 3
-python demo_defense.py
-```
-
-### Scan Your Own MCP Server
-
-```bash
-python3 -c "
-import asyncio
-from mcp_core.base_client import BaseClient
-from attack.scanner import MCPScanner
-
-async def scan():
-    client = BaseClient('http://YOUR_SERVER:PORT/mcp/')
-    await client.connect()
-    scanner = MCPScanner(client)
-    findings = await scanner.scan_all()
-    print(f'Found {len(findings)} vulnerabilities')
-
-asyncio.run(scan())
-"
-```
 
 ### Autonomous Agent Arena
 
