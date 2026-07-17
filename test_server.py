@@ -43,6 +43,13 @@ def get_file(file_name: str) -> str:
     except Exception as e:
         return f"Error: {str(e)}"
 
+@mcp.resource("price://{item}")
+def get_price(item: str) -> str:
+    """Fetch item price from price API."""
+    # Simulate SQL query — vulnerable to injection
+    if "'" in item or '"' in item:
+        return f"Error: SQL syntax error near '{item}' in query: SELECT price FROM items WHERE name = '{item}'"
+    return f"Price of {item}: $9.99"
 
 @mcp.prompt()
 def summarize(text: str) -> str:

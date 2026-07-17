@@ -47,14 +47,23 @@ Choose a demo:
         subprocess.run([sys.executable, "-c", f"""
 import asyncio
 from mcp_core.base_client import BaseClient
+from attack.recon import print_recon_report
 from attack.scanner import MCPScanner
 
 async def scan():
     client = BaseClient('{url}')
-    await client.connect()
+    info = await client.connect()
+    print_recon_report(info)
+    
     scanner = MCPScanner(client)
     findings = await scanner.scan_all()
-    print(f'\\nFound {{len(findings)}} vulnerabilities')
+    
+    if findings:
+        print(f'\\nVULNERABILITIES FOUND: {{len(findings)}}')
+        for f in findings:
+            print(f"  [{{f['severity']}}] {{f['title']}}")
+    else:
+        print('\\nNo vulnerabilities found.')
 
 asyncio.run(scan())
 """])

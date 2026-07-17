@@ -3,7 +3,7 @@ Vulnerability scanner for MCP servers.
 Tests tools and resources for security vulnerabilities.
 """
 
-from mcp_core.payloads import CMDI_PAYLOADS, PATH_TRAVERSAL_PAYLOADS
+from mcp_core.payloads import CMDI_PAYLOADS, PATH_TRAVERSAL_PAYLOADS, SQLI_PAYLOADS
 from mcp_core.utils import analyze_error, print_finding
 
 
@@ -23,6 +23,7 @@ class MCPScanner:
         await self.scan_command_injection()
         await self.scan_path_traversal()
         await self.scan_info_disclosure()
+        await self.scan_sqli()
         
         return self.findings
     
@@ -186,6 +187,61 @@ class MCPScanner:
     def _is_cmdi_success(self, response: str) -> bool:
         """Check if response indicates successful command injection."""
         indicators = ['uid=', 'root:', 'gid=', 'groups=']
+        for indicator in indicators:
+            if indicator in response.lower():
+                return True
+        return False
+
+
+    async def scan_sqli(self):
+        """Test resource templates for SQL injection."""
+        print("\n--- SQL Injection Scan ---")
+        
+        for template in self.client.info.resource_templates:
+            if not hasattr(template, 'uriTemplate') or '{' not in template.uriTemplate:
+                continue
+            
+            print(f"  Testing {template.name}...")
+            
+            for payload in SQLI_PAYLOADS:
+                # Replace template variable with payload
+                test_uri = template.uriTemplate
+                for var in self._get_template_vars(template):
+                    test_uri = test_uri.replace(f"{{{var}}}", payload['payload'])
+                
+                success, response = await self.client.read_resource(test_uri)
+                
+                if self._is_sqli_success(response):
+                    self.findings.append({
+                        "severity": "HIGH",
+                        "category": "sqli",
+                        "title": f"SQL Injection in {template.name}",
+                        "description": f"Resource {template.uriTemplate} is vulnerable to SQL injection",
+                        "evidence": response[:300],
+                        "payload": payload['payload'],
+                        "capability": template.name
+                    })
+                    print(f"    [!] CONFIRMED with payload: {payload['payload']}")
+                    return
+                else:
+                    print(f"    [-] {payload['name']}: not vulnerable")
+        
+        if not any(f['category'] == 'sqli' for f in self.findings):
+            print("  No SQL injection found")
+    
+    def _get_template_vars(self, template) -> list:
+        """Extract variable names from URI template."""
+        import re
+        if hasattr(template, 'uriTemplate'):
+            return re.findall(r'\{(\w+)\}', template.uriTemplate)
+        return []
+    
+    def _is_sqli_success(self, response: str) -> bool:
+        """Check if response indicates successful SQL injection."""
+        indicators = [
+            'sql', 'syntax error', 'query', 'SELECT', 'FROM', 'WHERE',
+            'mysql', 'sqlite', 'postgresql', 'database'
+        ]
         for indicator in indicators:
             if indicator in response.lower():
                 return True
