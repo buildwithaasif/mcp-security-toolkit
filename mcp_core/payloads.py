@@ -17,9 +17,10 @@ CMDI_PAYLOADS = [
 ]
 
 PATH_TRAVERSAL_PAYLOADS = [
-    {"name": "parent_dir",       "payload": "../etc/passwd",            "type": "detection"},
-    {"name": "absolute_path",    "payload": "/etc/passwd",              "type": "detection"},
-    {"name": "double_encoded",   "payload": "..%2F..%2Fetc%2Fpasswd",  "type": "bypass"},
+    {"name": "url_encoded_passwd",   "payload": "..%2Fetc%2Fpasswd",            "type": "detection"},
+    {"name": "url_encoded_shadow",   "payload": "..%2Fetc%2Fshadow",            "type": "detection"},
+    {"name": "url_encoded_hostname", "payload": "..%2Fetc%2Fhostname",          "type": "confirmation"},
+    {"name": "double_encoded",       "payload": "..%252F..%252Fetc%252Fpasswd", "type": "bypass"},
 ]
 
 PROMPT_INJECTION_PAYLOADS = [

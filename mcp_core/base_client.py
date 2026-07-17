@@ -48,10 +48,12 @@ class BaseClient:
         try:
             async with self.client:
                 result = await self.client.read_resource(uri)
-                if result.content:
-                    text = "\n".join([item.text for item in result.content])
-                    return True, text
-            return True, str(result)
+                # result is a list of TextContent objects
+                if result and len(result) > 0:
+                    if hasattr(result[0], 'text'):
+                        return True, result[0].text
+                    return True, str(result[0])
+                return True, str(result)
         except Exception as e:
             return False, str(e)
     
