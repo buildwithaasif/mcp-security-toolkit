@@ -110,7 +110,7 @@ A user installs what looks like a "Productivity Assistant" MCP server. Hidden in
 ### Requirements
 
 - Python 3.10+
-- [Ollama](https://ollama.com) (optional — for LLM victim demos)
+- [Ollama](https://ollama.com) (optional)
 
 ### Install
 
@@ -118,9 +118,17 @@ A user installs what looks like a "Productivity Assistant" MCP server. Hidden in
 git clone https://github.com/buildwithaasif/mcp-security-toolkit.git
 cd mcp-security-toolkit
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
 ```
+
+### Run
+
+```bash
+python run.py
+```
+
+Choose from 5 demos — offense, defense, arena, scanner, or full cat-and-mouse.
 
 ### 60-Second Offense Demo
 
