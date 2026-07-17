@@ -9,3 +9,11 @@ arena_history.json
 arena_round*.json
 attack_history.json
 defense_rules.json
+test_client.py
+test_defensive.py
+test_evil.py
+test_firewall.py
+test_sandbox.py
+setup.py
+demo.py
+demo_defense.py
