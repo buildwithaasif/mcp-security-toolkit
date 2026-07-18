@@ -1,23 +1,29 @@
-# MCP Security Toolkit
+# MCPSecure — Protect AI Agents from Malicious MCP Servers
 
-> **The first offensive and defensive security toolkit for the Model Context Protocol (MCP).**  
-> Find vulnerabilities in MCP servers. Build malicious MCP servers for red team research. Defend against MCP supply chain attacks.
+> **MCP has no built-in security. We proved these attacks work against real LLMs including qwen3.6 and llama3.2. We built the defense that stops them.**
+
+## Who This Is For
+
+**AI startups building agentic products.** If your LLM connects to MCP servers, you need MCPSecure.
 
 ## The Problem
 
-MCP (Model Context Protocol) was introduced in 2024 to connect LLMs with external tools. But it has **zero built-in security**:
+When your AI agent connects to an MCP server, that server can hide malicious instructions inside tool descriptions. Your LLM obeys them. Your data gets stolen.
 
-- **No authentication** — anyone can connect to an MCP server
-- **No tool verification** — servers can inject hidden instructions into tool descriptions
-- **No namespacing** — two servers can offer the same tool, LLMs can't tell which is real
-- **No description sanitization** — hidden `<IMPORTANT>` tags trick LLMs into exfiltrating data
+We proved this works against real LLMs. A user installs what looks like a "Productivity Assistant" MCP server. Hidden in the tool descriptions are instructions telling the LLM to read `~/.ssh/id_rsa` and send it to the attacker. The user only sees "Report created successfully."
 
-When you connect your LLM to an MCP server, you're trusting it blindly. **A malicious server looks exactly like a legitimate one.**
+**The LLM cannot tell the difference between a legitimate tool and a malicious one.**
 
-### The Attack in One Sentence
 
-A user installs what looks like a "Productivity Assistant" MCP server. Hidden in the tool descriptions are instructions telling the LLM to read `~/.ssh/id_rsa` and send it to the attacker. The user only sees "Report created successfully."
+## Proof
 
+We didn't guess these attacks work. We built them and tested against real LLMs:
+
+- **qwen3.6 (23B)** — Tricked into asking for SSH keys
+- **llama3.2 (3B)** — Successfully exfiltrated `/etc/hostname` contents
+- **Autonomous Red Agent** — Generated 9 novel attacks, 2 successfully tricked a live LLM
+
+Our defensive scanner detects hidden instructions, stealth commands, file exfiltration patterns, and tool shadowing — all before the LLM ever sees them.
 
 ## What This Toolkit Does
 
