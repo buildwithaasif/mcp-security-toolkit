@@ -25,7 +25,7 @@ We didn't guess these attacks work. We built them and tested against real LLMs:
 
 Our defensive scanner detects hidden instructions, stealth commands, file exfiltration patterns, and tool shadowing — all before the LLM ever sees them.
 
-## What This Toolkit Does
+## What It Does
 
 ### Offensive (`attack/` + `evil_mcp/`)
 
@@ -200,15 +200,17 @@ This toolkit is based on original security research into the Model Context Proto
 
 ## Our Vision
 
-AI agents are rapidly evolving.
+AI agents are becoming a new class of software users.
 
-Today, most AI agents interact with the outside world through MCP servers. Tomorrow, they will increasingly execute Skills, plugins, browser automation, shell commands, and long-running workflows directly inside their runtime.
+Just as web applications created the need for web security, and cloud computing created the need for cloud security, AI agents are creating an entirely new security challenge.
 
-As AI agents become more capable, their attack surface grows far beyond any single protocol.
+Today, AI agents increasingly interact with the outside world through machine-readable interfaces such as MCP. As they become more capable, they are also beginning to execute Skills, plugins, browser automation, shell commands, and long-running workflows directly inside their runtime.
 
-We believe AI security must evolve the same way.
+This evolution dramatically expands the AI agent attack surface. Security can no longer focus on protecting a single protocol—it must protect the agent itself, regardless of how it executes actions.
 
-We are starting with MCP because it is one of today's most important AI agent attack surfaces. Our long-term vision is to build the runtime security layer that protects AI agents regardless of how they execute actions.
+We are starting with MCP because it is one of today's fastest-growing standards for connecting AI agents to external tools and one of the earliest emerging AI agent attack surfaces.
+
+Our long-term vision is to build the runtime security layer that enables developers and organizations to safely deploy AI agents as the ecosystem continues to evolve.
 
 ---
 
