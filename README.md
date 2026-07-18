@@ -197,14 +197,53 @@ This toolkit is based on original security research into the Model Context Proto
 4. Runtime tool behavior changes (rug pulls) evade static analysis
 5. Most MCP clients blindly trust server-provided tool descriptions
 
-## Roadmap
 
-- [ ] MCP protocol fuzzer
-- [ ] Browser extension for MCP tool inspection
-- [ ] Community-contributed detection rules
-- [ ] Integration with Claude Desktop and Cursor
-- [ ] MCP security best practices RFC
+## Our Vision
 
+AI agents are rapidly evolving.
+
+Today, most AI agents interact with the outside world through MCP servers. Tomorrow, they will increasingly execute Skills, plugins, browser automation, shell commands, and long-running workflows directly inside their runtime.
+
+As AI agents become more capable, their attack surface grows far beyond any single protocol.
+
+We believe AI security must evolve the same way.
+
+We are starting with MCP because it is one of today's most important AI agent attack surfaces. Our long-term vision is to build the runtime security layer that protects AI agents regardless of how they execute actions.
+
+---
+
+# Roadmap
+
+## Today — Secure the MCP Ecosystem
+
+Build the security foundation for developers and organizations adopting MCP.
+
+- [ ] Detect malicious MCP servers before they are trusted
+- [ ] Discover protocol-level vulnerabilities through automated fuzzing
+- [ ] Integrate directly with popular MCP clients (Claude Desktop, Cursor, etc.)
+- [ ] Build an open community of detection rules and security best practices
+
+---
+
+## Next — Secure AI Agent Execution
+
+Expand protection beyond MCP to the actions performed by AI agents themselves.
+
+- [ ] Analyze Skills and plugins before execution
+- [ ] Monitor runtime behavior and detect malicious actions
+- [ ] Protect secrets, credentials, and sensitive files
+- [ ] Enforce security policies for AI agent execution
+
+---
+
+## Long-Term — Runtime Security for AI Agents
+
+Build a security platform that continuously protects AI agents across every execution environment.
+
+- [ ] Unified visibility into AI agent activity
+- [ ] Organization-wide policy management
+- [ ] AI-native threat detection and response
+- [ ] Cross-framework protection for the next generation of AI agents
 ## Disclaimer
 
 This toolkit is for **educational purposes, authorized security research, and red team operations only**. Do not use it against servers you don't own or have explicit permission to test.
