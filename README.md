@@ -2,18 +2,27 @@
 
 > **MCP has no built-in security. We proved these attacks work against real LLMs including qwen3.6 and llama3.2. We built the defense that stops them.**
 
+
 ## Who This Is For
 
-**AI startups building agentic products.** If your LLM connects to MCP servers, you need MCPSecure.
+Developers and AI teams building agentic products that connect LLMs to MCP servers.
+
+## Why Now? 
+
+As MCP becomes the standard way for AI agents to connect to external tools, malicious MCP servers become a new attack surface.
+Today, most MCP clients trust server-provided tool descriptions by default, making prompt injection and tool poisoning practical attacks.
 
 ## The Problem
 
 When your AI agent connects to an MCP server, that server can hide malicious instructions inside tool descriptions. Your LLM obeys them. Your data gets stolen.
 
-We proved this works against real LLMs. A user installs what looks like a "Productivity Assistant" MCP server. Hidden in the tool descriptions are instructions telling the LLM to read `~/.ssh/id_rsa` and send it to the attacker. The user only sees "Report created successfully."
+We tested these attacks against real LLMs. A user installs what looks like a "Productivity Assistant" MCP server. Hidden in the tool descriptions are instructions telling the LLM to read `~/.ssh/id_rsa` and send it to the attacker. The user only sees "Report created successfully."
 
 **The LLM cannot tell the difference between a legitimate tool and a malicious one.**
 
+## What It Does
+
+MCPSecure scans, sanitizes, and blocks malicious MCP servers and tools before they ever reach your AI agent.
 
 ## Proof
 
@@ -25,52 +34,70 @@ We didn't guess these attacks work. We built them and tested against real LLMs:
 
 Our defensive scanner detects hidden instructions, stealth commands, file exfiltration patterns, and tool shadowing — all before the LLM ever sees them.
 
-## What It Does
+## How MCPSecure Works
 
-### Offensive (`attack/` + `evil_mcp/`)
+MCPSecure secures AI agents in three stages: it discovers vulnerable MCP servers, blocks malicious MCP tools before they reach the LLM, and continuously improves its defenses through autonomous Red vs Blue testing.
+
+### 1. Discover Vulnerable MCP Servers
+
+MCPSecure helps security researchers identify vulnerabilities in MCP servers before attackers can exploit them.
 
 | Module | Description | Attack Types |
 |--------|-------------|--------------|
-| **Recon** | Maps MCP server attack surface | Tool/resource enumeration, risk assessment |
-| **Scanner** | Finds vulnerabilities automatically | Command injection, path traversal, SQLi, SSRF, info disclosure |
-| **Exploiter** | Extracts real data from vulnerable servers | Arbitrary command execution, file theft |
-| **EvilMCP** | Malicious MCP server for red team research | Prompt injection, tool poisoning, rug pull, tool shadowing |
+| **Recon** | Maps the MCP server attack surface | Tool/resource enumeration, risk assessment |
+| **Scanner** | Finds vulnerabilities automatically | Command injection, path traversal, SQL injection, SSRF, information disclosure |
+| **Exploiter** | Demonstrates the real impact of discovered vulnerabilities | Arbitrary command execution, file theft |
+| **EvilMCP** | Malicious MCP server for authorized red team research | Prompt injection, tool poisoning, rug pull, tool shadowing |
 
-### Defensive (`defensive/`)
+---
+
+### 2. Protect AI Agents from Malicious MCP Servers
+
+MCPSecure analyzes every MCP tool before it reaches the LLM, preventing malicious instructions from influencing the AI agent.
 
 | Module | Description | Protection Layer |
 |--------|-------------|-----------------|
 | **Scanner** | Detects malicious patterns in tool descriptions | Pattern matching, stealth command detection |
-| **Firewall** | Blocks dangerous tools before LLM sees them | Tool-level access control |
-| **Sandbox** | Restricts filesystem access and sanitizes prompts | Path blocking, description cleaning |
-| **Audit Log** | Records all MCP activity for forensics | Monitoring and incident response |
+| **Firewall** | Blocks dangerous tools before the LLM sees them | Tool-level access control |
+| **Sandbox** | Restricts filesystem access and sanitizes prompts | Path blocking, description sanitization |
+| **Audit Log** | Records MCP activity for investigation and compliance | Monitoring and incident response |
 
-### Autonomous AI Agents (`agents/`)
+---
+
+### 3. Continuously Improve Security with Autonomous Red vs Blue Testing
+
+MCPSecure continuously evolves by allowing autonomous Red and Blue agents to generate, test, detect, and defend against new MCP attack techniques.
 
 | Agent | Brain Model | Role |
-|-------|------------|------|
-| **Red Agent** | CyberStrike-OffSec-35B / llama3.2 | Generates novel prompt injection attacks using 16 techniques |
-| **Blue Agent** | Qwen3.6-35B / llama3.2 | Analyzes attacks, generates detection rules autonomously |
-| **Arena** | — | Orchestrates Red vs Blue combat with live LLM testing |
+|-------|-------------|------|
+| **Red Agent** | CyberStrike-OffSec-35B / llama3.2 | Generates novel prompt injection attacks using 16 attack techniques |
+| **Blue Agent** | Qwen3.6-35B / llama3.2 | Analyzes attacks and automatically generates new detection rules |
+| **Arena** | — | Orchestrates live Red vs Blue testing against real LLMs |
 
-**The Loop:**
-1. Red generates attacks → deploys against real LLMs
-2. LLMs get tricked → data would be stolen
-3. Blue analyzes attacks → generates detection rules
-4. Missed attacks trigger deep analysis → Blue improves
-5. Repeat — both agents learn continuously
+**Continuous Improvement Loop**
 
-### Demo Scripts
+1. Red Agent generates new MCP attacks.
+2. Attacks are deployed against real LLMs.
+3. Blue Agent analyzes successful attacks.
+4. New detection rules are generated automatically.
+5. Future attacks become harder to execute.
+6. The cycle repeats, continuously improving protection.
 
-| Script | Runtime | What It Shows |
-|--------|---------|---------------|
-| `demo_offense_clean.py` | 60 sec | EvilMCP stealing data from an unprotected LLM |
-| `demo_defense_clean.py` | 60 sec | MCPSecure blocking all 6 attack types |
-| `demo.py` | Full | Complete attack chain with exfiltration |
-| `demo_defense.py` | Full | Cat-and-mouse: EvilMCP vs MCPSecure |
+---
+
+### See It In Action
+
+| Demo | Runtime | What It Shows |
+|------|---------|---------------|
+| `demo_offense_clean.py` | ~60 sec | EvilMCP successfully tricks an unprotected LLM into exfiltrating sensitive data |
+| `demo_defense_clean.py` | ~60 sec | MCPSecure detects and blocks all six demonstrated attack techniques |
+| `demo.py` | Full | Complete attack chain from compromise to data exfiltration |
+| `demo_defense.py` | Full | Live cat-and-mouse demonstration between EvilMCP and MCPSecure |
 
 
 ## Architecture
+
+MCPSecure sits between the MCP client and the MCP server, inspecting every tool before it reaches the LLM.
 
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
@@ -98,6 +125,10 @@ Our defensive scanner detects hidden instructions, stealth commands, file exfilt
 **Without MCPSecure:** The LLM sees raw tool descriptions — including hidden instructions.
 
 **With MCPSecure:** Tool descriptions are scanned, sanitized, and filtered before the LLM ever sees them.
+
+## How MCPSecure Stops Common MCP Attacks
+
+MCPSecure detects and blocks multiple classes of MCP attacks before malicious instructions ever reach the LLM.
 
 ## Attack vs Defense Matrix
 
@@ -181,15 +212,15 @@ python -m agents.arena
 Red and Blue agents fight autonomously. Watch the detection rate improve each round.
 
 
-## Research Background
+## Security Research Behind MCPSecure
 
-This toolkit is based on original security research into the Model Context Protocol, including:
+MCPSecure was built from hands-on security research into the Model Context Protocol (MCP), combining original attack research with publicly documented vulnerabilities and real-world testing.
 
 - **Protocol-level vulnerabilities** discovered through manual JSON-RPC analysis
 - **Attack techniques** documented in HackTheBox's MCP security module
 - **Novel attack vectors** including tool shadowing and rug pull attacks against LLM-integrated MCP clients
 
-### Key Findings
+### What We Learned
 
 1. MCP has no built-in authentication, authorization, or tool verification
 2. Tool descriptions are an unrestricted prompt injection vector
@@ -197,8 +228,10 @@ This toolkit is based on original security research into the Model Context Proto
 4. Runtime tool behavior changes (rug pulls) evade static analysis
 5. Most MCP clients blindly trust server-provided tool descriptions
 
+These findings directly shaped MCPSecure's design, including its scanner, firewall, sandbox, and autonomous detection capabilities.
 
-## Our Vision
+
+## Vision
 
 AI agents are becoming a new class of software users.
 
@@ -214,16 +247,18 @@ Our long-term vision is to build the runtime security layer that enables develop
 
 ---
 
-# Roadmap
+**MCPSecure is our first step toward that future.**
+
+## Roadmap
 
 ## Today — Secure the MCP Ecosystem
 
 Build the security foundation for developers and organizations adopting MCP.
 
-- [ ] Detect malicious MCP servers before they are trusted
-- [ ] Discover protocol-level vulnerabilities through automated fuzzing
-- [ ] Integrate directly with popular MCP clients (Claude Desktop, Cursor, etc.)
-- [ ] Build an open community of detection rules and security best practices
+- Detect malicious MCP servers before they are trusted.
+- Discover protocol-level vulnerabilities through automated fuzzing.
+- Integrate directly with popular MCP clients (Claude Desktop, Cursor, and others).
+- Build an open community of detection rules and security best practices.
 
 ---
 
@@ -231,10 +266,10 @@ Build the security foundation for developers and organizations adopting MCP.
 
 Expand protection beyond MCP to the actions performed by AI agents themselves.
 
-- [ ] Analyze Skills and plugins before execution
-- [ ] Monitor runtime behavior and detect malicious actions
-- [ ] Protect secrets, credentials, and sensitive files
-- [ ] Enforce security policies for AI agent execution
+- Analyze Skills and plugins before execution.
+- Monitor runtime behavior and detect malicious actions.
+- Protect secrets, credentials, and sensitive files.
+- Enforce security policies for AI agent execution.
 
 ---
 
@@ -242,10 +277,11 @@ Expand protection beyond MCP to the actions performed by AI agents themselves.
 
 Build a security platform that continuously protects AI agents across every execution environment.
 
-- [ ] Unified visibility into AI agent activity
-- [ ] Organization-wide policy management
-- [ ] AI-native threat detection and response
-- [ ] Cross-framework protection for the next generation of AI agents
+- Provide unified visibility into AI agent activity.
+- Enable organization-wide security policy management.
+- Deliver AI-native threat detection and response.
+- Protect AI agents across frameworks, runtimes, and execution environments.
+
 ## Disclaimer
 
 This toolkit is for **educational purposes, authorized security research, and red team operations only**. Do not use it against servers you don't own or have explicit permission to test.
