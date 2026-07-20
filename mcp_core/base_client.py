@@ -1,5 +1,6 @@
 from fastmcp import Client
 from dataclasses import dataclass, field
+import re
 
 
 @dataclass
@@ -17,10 +18,11 @@ class ServerInfo:
 class BaseClient:
     """Wraps fastmcp.Client to connect and enumerate server capabilities."""
 
-    def __init__(self, server_url: str):
+    def __init__(self, server_url: str, quiet: bool = False):
         self.url = server_url
         self.client = Client(server_url)
         self.info = ServerInfo(url=server_url)
+        self.quiet = quiet
 
     async def connect(self):
         """Connect to the server and discover all capabilities."""
@@ -30,6 +32,93 @@ class BaseClient:
             await self._discover_resources()
             await self._discover_prompts()
         return self.info
+
+    async def _discover_identity(self):
+        """Capture server identity from initialization."""
+        try:
+            if hasattr(self.client, 'initialize_result'):
+                result = self.client.initialize_result
+                if hasattr(result, 'serverInfo'):
+                    info = result.serverInfo
+                    self.info.name = getattr(info, 'name', 'Unknown')
+                    self.info.version = getattr(info, 'version', 'Unknown')
+        except Exception as e:
+            if not self.quiet:
+                print(f"    Could not capture server identity: {e}")
+
+    async def _discover_tools(self):
+        """Fetch list of available tools with parameter schemas."""
+        try:
+            tools = await self.client.list_tools()
+            self.info.tools = tools
+            if not self.quiet:
+                print(f"    Tools found: {len(tools)}")
+                for tool in tools:
+                    params = []
+                    if hasattr(tool, 'inputSchema') and tool.inputSchema:
+                        properties = tool.inputSchema.get('properties', {})
+                        required = tool.inputSchema.get('required', [])
+                        for param_name, param_info in properties.items():
+                            param_type = param_info.get('type', 'unknown')
+                            is_required = param_name in required
+                            params.append({
+                                'name': param_name,
+                                'type': param_type,
+                                'required': is_required
+                            })
+                    
+                    print(f"      - {tool.name}: {tool.description}")
+                    if params:
+                        for p in params:
+                            req_mark = "REQUIRED" if p['required'] else "optional"
+                            print(f"          {p['name']} ({p['type']}, {req_mark})")
+                    else:
+                        print(f"          (no parameters)")
+        except Exception as e:
+            if not self.quiet:
+                print(f"    No tools discovered: {e}")
+
+    async def _discover_resources(self):
+        """Fetch list of available resources and resource templates."""
+        try:
+            resources = await self.client.list_resources()
+            self.info.resources = resources
+            if not self.quiet:
+                print(f"    Resources found: {len(resources)}")
+                for r in resources:
+                    print(f"      - {r.name}")
+        except Exception as e:
+            if not self.quiet:
+                print(f"    No resources discovered: {e}")
+
+        try:
+            templates = await self.client.list_resource_templates()
+            self.info.resource_templates = templates
+            if not self.quiet:
+                print(f"    Resource templates found: {len(templates)}")
+                for t in templates:
+                    variables = []
+                    if hasattr(t, 'uriTemplate') and t.uriTemplate:
+                        variables = re.findall(r'\{(\w+)\}', t.uriTemplate)
+                    print(f"      - {t.name}: {t.uriTemplate}")
+                    if variables:
+                        print(f"          Variables: {', '.join(variables)}")
+        except Exception as e:
+            if not self.quiet:
+                print(f"    No resource templates discovered: {e}")
+
+    async def _discover_prompts(self):
+        """Fetch list of available prompts."""
+        try:
+            prompts = await self.client.list_prompts()
+            self.info.prompts = prompts
+            if not self.quiet:
+                print(f"    Prompts found: {len(prompts)}")
+                for p in prompts:
+                    print(f"      - {p.name}: {p.description}")
+        except Exception as e:
+            if not self.quiet:
+                print(f"    No prompts discovered: {e}")
 
     async def call_tool(self, name: str, args: dict):
         """Call a tool on the server. Returns (success, response_text)."""
@@ -48,7 +137,6 @@ class BaseClient:
         try:
             async with self.client:
                 result = await self.client.read_resource(uri)
-                # result is a list of TextContent objects
                 if result and len(result) > 0:
                     if hasattr(result[0], 'text'):
                         return True, result[0].text
@@ -56,87 +144,3 @@ class BaseClient:
                 return True, str(result)
         except Exception as e:
             return False, str(e)
-    
-    async def _discover_identity(self):
-        """Capture server identity from initialization."""
-        try:
-            if hasattr(self.client, 'initialize_result'):
-                result = self.client.initialize_result
-                if hasattr(result, 'serverInfo'):
-                    info = result.serverInfo
-                    self.info.name = getattr(info, 'name', 'Unknown')
-                    self.info.version = getattr(info, 'version', 'Unknown')
-        except Exception as e:
-            print(f"    Could not capture server identity: {e}")
-
-    async def _discover_tools(self):
-        """Fetch list of available tools with parameter schemas."""
-        try:
-            tools = await self.client.list_tools()
-            self.info.tools = tools
-            print(f"    Tools found: {len(tools)}")
-            for tool in tools:
-                # Extract parameter details
-                params = []
-                if hasattr(tool, 'inputSchema') and tool.inputSchema:
-                    properties = tool.inputSchema.get('properties', {})
-                    required = tool.inputSchema.get('required', [])
-                    for param_name, param_info in properties.items():
-                        param_type = param_info.get('type', 'unknown')
-                        is_required = param_name in required
-                        params.append({
-                            'name': param_name,
-                            'type': param_type,
-                            'required': is_required
-                        })
-                
-                print(f"      - {tool.name}: {tool.description}")
-                if params:
-                    for p in params:
-                        req_mark = "REQUIRED" if p['required'] else "optional"
-                        print(f"          {p['name']} ({p['type']}, {req_mark})")
-                else:
-                    print(f"          (no parameters)")
-        except Exception as e:
-            print(f"    No tools discovered: {e}")
-
-    async def _discover_resources(self):
-        """Fetch list of available resources and resource templates."""
-        # Discover static resources
-        try:
-            resources = await self.client.list_resources()
-            self.info.resources = resources
-            print(f"    Resources found: {len(resources)}")
-            for r in resources:
-                print(f"      - {r.name}")
-        except Exception as e:
-            print(f"    No resources discovered: {e}")
-
-        # Discover resource templates with variables
-        try:
-            templates = await self.client.list_resource_templates()
-            self.info.resource_templates = templates
-            print(f"    Resource templates found: {len(templates)}")
-            for t in templates:
-                variables = []
-                if hasattr(t, 'uriTemplate') and t.uriTemplate:
-                    import re
-                    variables = re.findall(r'\{(\w+)\}', t.uriTemplate)
-                
-                print(f"      - {t.name}: {t.uriTemplate}")
-                if variables:
-                    print(f"          Variables: {', '.join(variables)}")
-        except Exception as e:
-            print(f"    No resource templates discovered: {e}")
-
-
-    async def _discover_prompts(self):
-        """Fetch list of available prompts."""
-        try:
-            prompts = await self.client.list_prompts()
-            self.info.prompts = prompts
-            print(f"    Prompts found: {len(prompts)}")
-            for p in prompts:
-                print(f"      - {p.name}: {p.description}")
-        except Exception as e:
-            print(f"    No prompts discovered: {e}")
