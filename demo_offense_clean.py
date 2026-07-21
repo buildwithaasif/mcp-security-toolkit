@@ -43,7 +43,7 @@ async def main():
     from mcp_core.base_client import BaseClient
     
     print_step(2, "Victim connects their LLM...")
-    client = BaseClient("http://127.0.0.1:9000/mcp/")
+    client = BaseClient("http://127.0.0.1:9000/mcp/", quiet=True)
     await client.connect()
     
     print(f"    Server name: {client.info.name}")

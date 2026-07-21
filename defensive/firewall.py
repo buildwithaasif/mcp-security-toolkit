@@ -13,7 +13,7 @@ class MCPFirewall:
     
     def __init__(self, server_url: str):
         self.server_url = server_url
-        self.client = BaseClient(server_url)
+        self.client = BaseClient(server_url, quiet=True)
         self.safe_tools = []
         self.blocked_tools = []
         self.scan_results = []
