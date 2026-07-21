@@ -5,20 +5,23 @@ Tests tools and resources for security vulnerabilities.
 
 from mcp_core.payloads import CMDI_PAYLOADS, PATH_TRAVERSAL_PAYLOADS, SQLI_PAYLOADS
 from mcp_core.utils import analyze_error, print_finding
+import re
 
 
 class MCPScanner:
     """Scans an MCP server for vulnerabilities."""
     
-    def __init__(self, base_client):
+    def __init__(self, base_client, quiet: bool = False):
         self.client = base_client
         self.findings = []
+        self.quiet = quiet
     
     async def scan_all(self):
         """Run all vulnerability checks."""
-        print("\n" + "=" * 50)
-        print("STARTING VULNERABILITY SCAN")
-        print("=" * 50)
+        if not self.quiet:
+            print("\n" + "=" * 50)
+            print("STARTING VULNERABILITY SCAN")
+            print("=" * 50)
         
         await self.scan_command_injection()
         await self.scan_path_traversal()
@@ -29,32 +32,30 @@ class MCPScanner:
     
     async def scan_command_injection(self):
         """Test high-risk tools for command injection."""
-        print("\n--- Command Injection Scan ---")
+        if not self.quiet:
+            print("\n--- Command Injection Scan ---")
         
-        # Find tools that accept user input
         for tool in self.client.info.tools:
             if not self._has_parameters(tool):
-                print(f"  Skipping {tool.name} (no parameters)")
+                if not self.quiet:
+                    print(f"  Skipping {tool.name} (no parameters)")
                 continue
             
-            print(f"  Testing {tool.name}...")
+            if not self.quiet:
+                print(f"  Testing {tool.name}...")
             
-            # Get parameter names
             params = self._get_param_names(tool)
             if not params:
                 continue
             
-            # Test each payload
             for payload in CMDI_PAYLOADS:
-                # Build the test argument
                 test_arg = f"date{payload['payload']}"
                 
-                # Call the tool
                 success, response = await self.client.call_tool(
                     tool.name,
                     {params[0]: test_arg}
                 )
-
+                
                 if success and self._is_cmdi_success(response):
                     self.findings.append({
                         "severity": "CRITICAL",
@@ -65,28 +66,32 @@ class MCPScanner:
                         "payload": payload['payload'],
                         "capability": tool.name
                     })
-                    print(f"    [!] CONFIRMED with payload: {payload['payload']}")
-                    return  # Found it, no need to test more payloads
+                    if not self.quiet:
+                        print(f"    [!] CONFIRMED with payload: {payload['payload']}")
+                    return
                 else:
-                    print(f"    [-] {payload['name']}: not vulnerable")
+                    if not self.quiet:
+                        print(f"    [-] {payload['name']}: not vulnerable")
         
-        if not any(f['category'] == 'command_injection' for f in self.findings):
-            print(f"  No command injection found")
-
+        if not self.quiet:
+            if not any(f['category'] == 'command_injection' for f in self.findings):
+                print("  No command injection found")
+    
     async def scan_path_traversal(self):
         """Test resource templates for path traversal."""
-        print("\n--- Path Traversal Scan ---")
+        if not self.quiet:
+            print("\n--- Path Traversal Scan ---")
         
         for template in self.client.info.resource_templates:
-            # Check if template has variables
             if not hasattr(template, 'uriTemplate') or '{' not in template.uriTemplate:
-                print(f"  Skipping {template.name} (no variables)")
+                if not self.quiet:
+                    print(f"  Skipping {template.name} (no variables)")
                 continue
             
-            print(f"  Testing {template.name}...")
+            if not self.quiet:
+                print(f"  Testing {template.name}...")
             
             for payload in PATH_TRAVERSAL_PAYLOADS:
-                # Build the test URI by replacing the variable
                 test_uri = template.uriTemplate.replace('{file_name}', payload['payload'])
                 
                 success, response = await self.client.read_resource(test_uri)
@@ -101,31 +106,32 @@ class MCPScanner:
                         "payload": payload['payload'],
                         "capability": template.name
                     })
-                    print(f"    [!] CONFIRMED with payload: {payload['payload']}")
-                    return  # Found it, stop testing this template
+                    if not self.quiet:
+                        print(f"    [!] CONFIRMED with payload: {payload['payload']}")
+                    return
                 else:
-                    print(f"    [-] {payload['name']}: not vulnerable")
+                    if not self.quiet:
+                        print(f"    [-] {payload['name']}: not vulnerable")
         
-        if not any(f['category'] == 'path_traversal' for f in self.findings):
-            print(f"  No path traversal found")
-
-
+        if not self.quiet:
+            if not any(f['category'] == 'path_traversal' for f in self.findings):
+                print("  No path traversal found")
+    
     async def scan_info_disclosure(self):
         """Trigger errors on capabilities and check for leaked information."""
-        print("\n--- Information Disclosure Scan ---")
+        if not self.quiet:
+            print("\n--- Information Disclosure Scan ---")
         
-        # Test tools with invalid input
         for tool in self.client.info.tools:
             params = self._get_param_names(tool)
             if not params:
                 continue
             
-            print(f"  Testing error handling on {tool.name}...")
+            if not self.quiet:
+                print(f"  Testing error handling on {tool.name}...")
             
-            # Send empty args to trigger errors
             success, response = await self.client.call_tool(tool.name, {})
             
-            # Check for info leaks (errors come back as success=False OR in response text)
             findings = analyze_error(response)
             for finding in findings:
                 finding["category"] = "info_disclosure"
@@ -133,16 +139,16 @@ class MCPScanner:
                 finding["evidence"] = response[:300]
                 finding["description"] = f"Tool {tool.name} leaks: {finding['title']}"
                 self.findings.append(finding)
-                print(f"    [!] {finding['title']}")
+                if not self.quiet:
+                    print(f"    [!] {finding['title']}")
         
-        # Test resource templates with invalid files
         for template in self.client.info.resource_templates:
             if not hasattr(template, 'uriTemplate') or '{' not in template.uriTemplate:
                 continue
             
-            print(f"  Testing error handling on {template.name}...")
+            if not self.quiet:
+                print(f"  Testing error handling on {template.name}...")
             
-            # Request a non-existent file to trigger error
             test_uri = template.uriTemplate.replace('{file_name}', 'NONEXISTENT_FILE_12345')
             success, response = await self.client.read_resource(test_uri)
             
@@ -153,58 +159,29 @@ class MCPScanner:
                 finding["evidence"] = response[:300]
                 finding["description"] = f"Resource {template.name} leaks: {finding['title']}"
                 self.findings.append(finding)
-                print(f"    [!] {finding['title']}")
+                if not self.quiet:
+                    print(f"    [!] {finding['title']}")
         
-        # Count info disclosure findings
-        info_count = sum(1 for f in self.findings if f['category'] == 'info_disclosure')
-        if info_count == 0:
-            print("  No information disclosure found")
-        else:
-            print(f"  Found {info_count} information disclosure(s)")
+        if not self.quiet:
+            info_count = sum(1 for f in self.findings if f['category'] == 'info_disclosure')
+            if info_count == 0:
+                print("  No information disclosure found")
+            else:
+                print(f"  Found {info_count} information disclosure(s)")
     
-    def _is_path_traversal_success(self, response: str) -> bool:
-        """Check if response indicates successful file read."""
-        indicators = ['root:', 'root:x:', '/bin/bash', 'daemon:', 'nobody:']
-        for indicator in indicators:
-            if indicator in response.lower():
-                return True
-        return False
-    
-    def _has_parameters(self, tool) -> bool:
-        """Check if a tool accepts any parameters."""
-        if hasattr(tool, 'inputSchema') and tool.inputSchema:
-            properties = tool.inputSchema.get('properties', {})
-            return len(properties) > 0
-        return False
-    
-    def _get_param_names(self, tool) -> list:
-        """Get list of parameter names for a tool."""
-        if hasattr(tool, 'inputSchema') and tool.inputSchema:
-            properties = tool.inputSchema.get('properties', {})
-            return list(properties.keys())
-        return []
-    
-    def _is_cmdi_success(self, response: str) -> bool:
-        """Check if response indicates successful command injection."""
-        indicators = ['uid=', 'root:', 'gid=', 'groups=']
-        for indicator in indicators:
-            if indicator in response.lower():
-                return True
-        return False
-
-
     async def scan_sqli(self):
         """Test resource templates for SQL injection."""
-        print("\n--- SQL Injection Scan ---")
+        if not self.quiet:
+            print("\n--- SQL Injection Scan ---")
         
         for template in self.client.info.resource_templates:
             if not hasattr(template, 'uriTemplate') or '{' not in template.uriTemplate:
                 continue
             
-            print(f"  Testing {template.name}...")
+            if not self.quiet:
+                print(f"  Testing {template.name}...")
             
             for payload in SQLI_PAYLOADS:
-                # Replace template variable with payload
                 test_uri = template.uriTemplate
                 for var in self._get_template_vars(template):
                     test_uri = test_uri.replace(f"{{{var}}}", payload['payload'])
@@ -221,20 +198,52 @@ class MCPScanner:
                         "payload": payload['payload'],
                         "capability": template.name
                     })
-                    print(f"    [!] CONFIRMED with payload: {payload['payload']}")
+                    if not self.quiet:
+                        print(f"    [!] CONFIRMED with payload: {payload['payload']}")
                     return
                 else:
-                    print(f"    [-] {payload['name']}: not vulnerable")
+                    if not self.quiet:
+                        print(f"    [-] {payload['name']}: not vulnerable")
         
-        if not any(f['category'] == 'sqli' for f in self.findings):
-            print("  No SQL injection found")
+        if not self.quiet:
+            if not any(f['category'] == 'sqli' for f in self.findings):
+                print("  No SQL injection found")
+    
+    def _has_parameters(self, tool) -> bool:
+        """Check if a tool accepts any parameters."""
+        if hasattr(tool, 'inputSchema') and tool.inputSchema:
+            properties = tool.inputSchema.get('properties', {})
+            return len(properties) > 0
+        return False
+    
+    def _get_param_names(self, tool) -> list:
+        """Get list of parameter names for a tool."""
+        if hasattr(tool, 'inputSchema') and tool.inputSchema:
+            properties = tool.inputSchema.get('properties', {})
+            return list(properties.keys())
+        return []
     
     def _get_template_vars(self, template) -> list:
         """Extract variable names from URI template."""
-        import re
         if hasattr(template, 'uriTemplate'):
             return re.findall(r'\{(\w+)\}', template.uriTemplate)
         return []
+    
+    def _is_cmdi_success(self, response: str) -> bool:
+        """Check if response indicates successful command injection."""
+        indicators = ['uid=', 'root:', 'gid=', 'groups=']
+        for indicator in indicators:
+            if indicator in response.lower():
+                return True
+        return False
+    
+    def _is_path_traversal_success(self, response: str) -> bool:
+        """Check if response indicates successful file read."""
+        indicators = ['root:', 'root:x:', '/bin/bash', 'daemon:', 'nobody:']
+        for indicator in indicators:
+            if indicator in response.lower():
+                return True
+        return False
     
     def _is_sqli_success(self, response: str) -> bool:
         """Check if response indicates successful SQL injection."""
