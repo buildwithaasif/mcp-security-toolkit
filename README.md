@@ -183,6 +183,18 @@ python scan_malicious.py http://127.0.0.1:9000/mcp/
 
 Detects hidden instructions, tool poisoning, and prompt injection.
 
+### Real-Time Firewall
+
+```bash
+# Terminal 1: Start EvilMCP
+python evil_mcp/evil_server.py
+
+# Terminal 2: Connect through MCPSecure
+python mcpusecure_connect.py http://127.0.0.1:9000/mcp/
+```
+
+Blocks malicious tools in real-time before an LLM sees them.
+
 ### 60-Second Offense Demo
 
 ```bash
