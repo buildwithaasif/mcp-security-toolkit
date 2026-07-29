@@ -85,15 +85,6 @@ MCPSecure continuously evolves by allowing autonomous Red and Blue agents to gen
 
 ---
 
-### See It In Action
-
-| Demo | Runtime | What It Shows |
-|------|---------|---------------|
-| `demo_offense_clean.py` | ~60 sec | EvilMCP successfully tricks an unprotected LLM into exfiltrating sensitive data |
-| `demo_defense_clean.py` | ~60 sec | MCPSecure detects and blocks all six demonstrated attack techniques |
-| `demo.py` | Full | Complete attack chain from compromise to data exfiltration |
-| `demo_defense.py` | Full | Live cat-and-mouse demonstration between EvilMCP and MCPSecure |
-
 
 ## Architecture
 
@@ -195,21 +186,6 @@ python mcpusecure_connect.py http://127.0.0.1:9000/mcp/
 
 Blocks malicious tools in real-time before an LLM sees them.
 
-### 60-Second Offense Demo
-
-```bash
-python demo_offense_clean.py
-```
-
-Shows EvilMCP tricking an LLM into exfiltrating data.
-
-### 60-Second Defense Demo
-
-```bash
-python demo_defense_clean.py
-```
-
-Shows MCPSecure blocking all 6 attack types.
 
 ### Autonomous Agent Arena
 
