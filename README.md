@@ -85,6 +85,44 @@ MCPSecure continuously evolves by allowing autonomous Red and Blue agents to gen
 
 ---
 
+## Agent Context Security (New)
+
+MCPSecure now protects the entire AI agent context — MCP tools, instruction files, and runtime actions.
+
+### Context Scanner
+
+```bash
+# Scan malicious instruction files
+python scan_context.py evil_agents.md
+python scan_context.py evil_skill/
+```
+
+Scans AGENTS.md and SKILL.md files for hidden instructions, stealth commands, and prompt injection — same detection engine as MCP tool scanning.
+
+### Action Firewall
+
+```python
+from defensive.action_firewall import ActionFirewall
+```
+
+Blocks dangerous agent actions at runtime — file access, network calls, shell commands, and credential access — regardless of where the instruction came from.
+
+### Policy Engine
+
+```python
+from defensive.policy_engine import PolicyEngine
+```
+
+Centralized security policies. Define what's allowed vs blocked across all layers. Configurable min scores, allowed directories, approved commands, and human approval requirements.
+
+### Test Targets
+
+| Target | What It Tests |
+|--------|---------------|
+| `evil_mcp/evil_server.py` | Malicious MCP server with hidden tool descriptions |
+| `evil_agents.md` | Malicious AGENTS.md with hidden instructions and exfiltration |
+| `evil_skill/` | Malicious skill package with poisoned SKILL.md and setup scripts |
+| `test_action_firewall.py` | Attempts dangerous actions — verifies firewall blocks all of them |
 
 ## Architecture
 
@@ -150,18 +188,6 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Scan a Vulnerable MCP Server
-
-```bash
-# Terminal 1: Start a test server
-python test_server.py
-
-# Terminal 2: Scan it
-python scan_server.py http://127.0.0.1:8000/mcp/
-```
-
-Finds command injection, path traversal, and information disclosure.
-
 ### Scan a Malicious MCP Server
 
 ```bash
@@ -173,6 +199,18 @@ python scan_malicious.py http://127.0.0.1:9000/mcp/
 ```
 
 Detects hidden instructions, tool poisoning, and prompt injection.
+
+### Scan a Vulnerable MCP Server
+
+```bash
+# Terminal 1: Start a test server
+python test_server.py
+
+# Terminal 2: Scan it
+python scan_server.py http://127.0.0.1:8000/mcp/
+```
+
+Finds command injection, path traversal, and information disclosure.
 
 ### Real-Time Firewall
 
@@ -186,6 +224,22 @@ python mcpusecure_connect.py http://127.0.0.1:9000/mcp/
 
 Blocks malicious tools in real-time before an LLM sees them.
 
+### Scan Instruction Files (AGENTS.md / SKILL.md)
+
+```bash
+python scan_context.py evil_agents.md
+python scan_context.py evil_skill/
+```
+
+Detects hidden instructions in agent instruction files.
+
+### Test Action Firewall
+
+```bash
+python test_action_firewall.py
+```
+
+Verifies the firewall blocks file access, network exfiltration, shell injection, and credential theft.
 
 ### Autonomous Agent Arena
 
