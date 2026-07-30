@@ -1,0 +1,14 @@
+{
+  "rules": [
+    {
+      "name": "detect_hidden_tags",
+      "layer": "mcp",
+      "effective": true,
+      "tests": 10,
+      "successes": 8,
+      "stored_at": "2026-07-30 09:15:46"
+    }
+  ],
+  "total_rules": 1,
+  "effective_rules": 1
+}

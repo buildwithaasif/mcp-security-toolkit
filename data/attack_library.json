@@ -1,0 +1,22 @@
+{
+  "attacks": [
+    {
+      "id": 1,
+      "technique": "prompt_injection",
+      "layer": "mcp",
+      "success": true,
+      "description": "Test attack",
+      "stored_at": "2026-07-30 09:15:46"
+    },
+    {
+      "id": 2,
+      "technique": "hidden_tags",
+      "layer": "context",
+      "success": false,
+      "description": "Test context attack",
+      "stored_at": "2026-07-30 09:15:46"
+    }
+  ],
+  "total_generated": 2,
+  "total_successful": 1
+}
