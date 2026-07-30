@@ -169,6 +169,11 @@ class AgentStorage:
         data = self._read(self.history_file)
         
         result["stored_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Convert detection_rate string to float for calculations
+        rate_str = result.get("detection_rate", "0%")
+        result["detection_rate_float"] = float(rate_str.replace("%", ""))
+        
         data["rounds"].append(result)
         data["total_rounds"] += 1
         
@@ -182,13 +187,13 @@ class AgentStorage:
         if not rounds:
             return {"message": "No rounds played yet"}
         
-        detection_rates = [r.get("detection_rate", 0) for r in rounds]
+        detection_rates = [r.get("detection_rate_float", 0) for r in rounds]
         
         return {
             "total_rounds": len(rounds),
-            "first_rate": detection_rates[0] if detection_rates else 0,
-            "latest_rate": detection_rates[-1] if detection_rates else 0,
-            "improvement": detection_rates[-1] - detection_rates[0] if len(detection_rates) > 1 else 0,
+            "first_rate": f"{detection_rates[0]}%" if detection_rates else "N/A",
+            "latest_rate": f"{detection_rates[-1]}%" if detection_rates else "N/A",
+            "improvement": f"{detection_rates[-1] - detection_rates[0]:.0f}%" if len(detection_rates) > 1 else "0%",
             "all_rates": detection_rates
         }
     
