@@ -11,38 +11,42 @@ from defensive.rules import ALL_RULES, rule_tool_shadowing
 class MCPFirewall:
     """Wraps an MCP client with security filtering."""
     
-    def __init__(self, server_url: str):
+    def __init__(self, server_url: str, quiet: bool = False):
         self.server_url = server_url
         self.client = BaseClient(server_url, quiet=True)
         self.safe_tools = []
         self.blocked_tools = []
         self.scan_results = []
+        self.quiet = quiet
     
     async def connect(self):
         """Connect to server, scan all tools, filter malicious ones."""
         await self.client.connect()
         
-        print("\n" + "=" * 60)
-        print(f"  MCP FIREWALL — Scanning {self.client.info.name}")
-        print("=" * 60)
+        if not self.quiet:
+            print("\n" + "=" * 60)
+            print(f"  MCP FIREWALL — Scanning {self.client.info.name}")
+            print("=" * 60)
         
-        # Scan every tool
         for tool in self.client.info.tools:
             result = scan_tool(tool)
             self.scan_results.append(result)
             
             if result["verdict"] in ("SAFE", "SUSPICIOUS"):
                 self.safe_tools.append(tool)
-                symbol = "✓" if result["verdict"] == "SAFE" else "⚠"
-                print(f"  {symbol} ALLOWED: {tool.name} (Score: {result['score']}/100)")
+                if not self.quiet:
+                    symbol = "✓" if result["verdict"] == "SAFE" else "⚠"
+                    print(f"  {symbol} ALLOWED: {tool.name} (Score: {result['score']}/100)")
             else:
                 self.blocked_tools.append(tool)
-                print(f"  ✗ BLOCKED: {tool.name} (Score: {result['score']}/100 — {result['verdict']})")
-                for finding in result["findings"]:
-                    print(f"      [{finding['severity']}] {finding['detail']}")
+                if not self.quiet:
+                    print(f"  ✗ BLOCKED: {tool.name} (Score: {result['score']}/100 — {result['verdict']})")
+                    for finding in result["findings"]:
+                        print(f"      [{finding['severity']}] {finding['detail']}")
         
-        print(f"\n  Summary: {len(self.safe_tools)} allowed, {len(self.blocked_tools)} blocked")
-        print("=" * 60)
+        if not self.quiet:
+            print(f"\n  Summary: {len(self.safe_tools)} allowed, {len(self.blocked_tools)} blocked")
+            print("=" * 60)
         
         return self.client.info
     
