@@ -193,18 +193,6 @@ MCPSecure v2 extends protection beyond MCP to cover all agent capability sources
                  External Systems
 ```
 
-### Test It
-
-```bash
-# Test Capability Firewall (10 attack sources)
-python test_capability_firewall.py
-
-# Test Trust Engine (rug pull detection)
-python test_trust_engine.py
-
-# Test Flight Recorder (full agent session)
-python test_flight_recorder.py
-```
 
 ## How MCPSecure Stops Common MCP Attacks
 
