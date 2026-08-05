@@ -15,7 +15,6 @@ A user installs what looks like a "Productivity Assistant." Hidden in the descri
 **The LLM cannot tell the difference between a legitimate tool and a malicious one.**
 
 
-markdown
 ## What It Does
 
 MCPSecure scans and blocks malicious MCP servers before they reach your AI agent.
