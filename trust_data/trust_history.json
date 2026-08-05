@@ -1,0 +1,223 @@
+[
+  {
+    "tool_name": "get_weather",
+    "hash": "bb065dfbb508ae7f",
+    "previous_hash": null,
+    "source": "mcp_tool",
+    "publisher": "verified",
+    "score": 85,
+    "verdict": "TRUSTED",
+    "reasons": [
+      "PUBLISHER: verified (25 points)",
+      "SOURCE: mcp_tool (10 points)"
+    ],
+    "evaluated_at": "2026-08-05 09:04:10"
+  },
+  {
+    "tool_name": "get_weather",
+    "hash": "139141d4bd7c09bd",
+    "previous_hash": "bb065dfbb508ae7f",
+    "source": "mcp_tool",
+    "publisher": "verified",
+    "score": 65.5,
+    "verdict": "CAUTION",
+    "reasons": [
+      "HASH CHANGED: Tool description modified since last verification. Previous: bb065dfb, Current: 139141d4",
+      "PUBLISHER: verified (25 points)",
+      "SOURCE: mcp_tool (10 points)",
+      "REPUTATION: Historical score 85"
+    ],
+    "evaluated_at": "2026-08-05 09:04:10"
+  },
+  {
+    "tool_name": "share_data",
+    "hash": "6c7ee20eb555355a",
+    "previous_hash": null,
+    "source": "multi_agent",
+    "publisher": "unknown",
+    "score": 20,
+    "verdict": "UNTRUSTED",
+    "reasons": [
+      "PUBLISHER: unknown (-10 points)",
+      "SOURCE: multi_agent (-20 points)"
+    ],
+    "evaluated_at": "2026-08-05 09:04:10"
+  },
+  {
+    "tool_name": "data_exporter",
+    "hash": "8405829412104b9c",
+    "previous_hash": null,
+    "source": "tool_output",
+    "publisher": "flagged",
+    "score": 0,
+    "verdict": "UNTRUSTED",
+    "reasons": [
+      "PUBLISHER: flagged (-30 points)",
+      "SOURCE: tool_output (-25 points)"
+    ],
+    "evaluated_at": "2026-08-05 09:04:10"
+  },
+  {
+    "tool_name": "get_weather",
+    "hash": "bb065dfbb508ae7f",
+    "previous_hash": null,
+    "source": "mcp_tool",
+    "publisher": "unknown",
+    "score": 58.7,
+    "verdict": "CAUTION",
+    "reasons": [
+      "PUBLISHER: unknown (-10 points)",
+      "SOURCE: mcp_tool (10 points)",
+      "REPUTATION: Historical score 79"
+    ],
+    "evaluated_at": "2026-08-05 09:06:37"
+  },
+  {
+    "tool_name": "calculate",
+    "hash": "600683a234eb928d",
+    "previous_hash": null,
+    "source": "mcp_tool",
+    "publisher": "unknown",
+    "score": 50,
+    "verdict": "CAUTION",
+    "reasons": [
+      "PUBLISHER: unknown (-10 points)",
+      "SOURCE: mcp_tool (10 points)"
+    ],
+    "evaluated_at": "2026-08-05 09:06:37"
+  },
+  {
+    "tool_name": "log_activity",
+    "hash": "ecb8dfaec39000dd",
+    "previous_hash": null,
+    "source": "mcp_tool",
+    "publisher": "unknown",
+    "score": 50,
+    "verdict": "CAUTION",
+    "reasons": [
+      "PUBLISHER: unknown (-10 points)",
+      "SOURCE: mcp_tool (10 points)"
+    ],
+    "evaluated_at": "2026-08-05 09:06:37"
+  },
+  {
+    "tool_name": "create_report",
+    "hash": "ff6d28fe4d0cde03",
+    "previous_hash": null,
+    "source": "mcp_tool",
+    "publisher": "unknown",
+    "score": 50,
+    "verdict": "CAUTION",
+    "reasons": [
+      "PUBLISHER: unknown (-10 points)",
+      "SOURCE: mcp_tool (10 points)"
+    ],
+    "evaluated_at": "2026-08-05 09:06:37"
+  },
+  {
+    "tool_name": "format_text",
+    "hash": "1133f7d7423ddd11",
+    "previous_hash": null,
+    "source": "mcp_tool",
+    "publisher": "unknown",
+    "score": 50,
+    "verdict": "CAUTION",
+    "reasons": [
+      "PUBLISHER: unknown (-10 points)",
+      "SOURCE: mcp_tool (10 points)"
+    ],
+    "evaluated_at": "2026-08-05 09:06:37"
+  },
+  {
+    "tool_name": "send_email",
+    "hash": "637b21c1640eb7b6",
+    "previous_hash": null,
+    "source": "mcp_tool",
+    "publisher": "unknown",
+    "score": 50,
+    "verdict": "CAUTION",
+    "reasons": [
+      "PUBLISHER: unknown (-10 points)",
+      "SOURCE: mcp_tool (10 points)"
+    ],
+    "evaluated_at": "2026-08-05 09:06:37"
+  },
+  {
+    "tool_name": "create_report",
+    "hash": "620148c6f74ae440",
+    "previous_hash": "ff6d28fe4d0cde03",
+    "source": "mcp_tool",
+    "publisher": "unknown",
+    "score": 20.0,
+    "verdict": "UNTRUSTED",
+    "reasons": [
+      "HASH CHANGED: Tool description modified since last verification. Previous: ff6d28fe, Current: 620148c6",
+      "PUBLISHER: unknown (-10 points)",
+      "SOURCE: mcp_tool (10 points)",
+      "REPUTATION: Historical score 50"
+    ],
+    "evaluated_at": "2026-08-05 09:06:37"
+  },
+  {
+    "tool_name": "create_report",
+    "hash": "620148c6f74ae440",
+    "previous_hash": null,
+    "source": "mcp_tool",
+    "publisher": "unknown",
+    "score": 31.299999999999997,
+    "verdict": "UNTRUSTED",
+    "reasons": [
+      "PUBLISHER: unknown (-10 points)",
+      "SOURCE: mcp_tool (10 points)",
+      "HISTORY: 1 previous incidents (-10 points)",
+      "REPUTATION: Historical score 21"
+    ],
+    "evaluated_at": "2026-08-05 09:06:37"
+  },
+  {
+    "tool_name": "get_weather",
+    "hash": "498ebfb0fbe6f6d8",
+    "previous_hash": null,
+    "source": "mcp_tool",
+    "publisher": "verified",
+    "score": 91.6,
+    "verdict": "TRUSTED",
+    "reasons": [
+      "PUBLISHER: verified (25 points)",
+      "SOURCE: mcp_tool (10 points)",
+      "REPUTATION: Historical score 72"
+    ],
+    "evaluated_at": "2026-08-05 09:12:48"
+  },
+  {
+    "tool_name": "create_report",
+    "hash": "8bcd82e7b178ba1b",
+    "previous_hash": null,
+    "source": "mcp_tool",
+    "publisher": "unknown",
+    "score": 32.2,
+    "verdict": "UNTRUSTED",
+    "reasons": [
+      "PUBLISHER: unknown (-10 points)",
+      "SOURCE: mcp_tool (10 points)",
+      "HISTORY: 1 previous incidents (-10 points)",
+      "REPUTATION: Historical score 24"
+    ],
+    "evaluated_at": "2026-08-05 09:12:48"
+  },
+  {
+    "tool_name": "calculate",
+    "hash": "9d7929bec1699c1d",
+    "previous_hash": null,
+    "source": "mcp_tool",
+    "publisher": "verified",
+    "score": 85.0,
+    "verdict": "TRUSTED",
+    "reasons": [
+      "PUBLISHER: verified (25 points)",
+      "SOURCE: mcp_tool (10 points)",
+      "REPUTATION: Historical score 50"
+    ],
+    "evaluated_at": "2026-08-05 09:12:48"
+  }
+]

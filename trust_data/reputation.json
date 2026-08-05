@@ -1,0 +1,42 @@
+{
+  "get_weather": {
+    "score": 77,
+    "evaluations": 4,
+    "incidents": 0
+  },
+  "share_data": {
+    "score": 20,
+    "evaluations": 1,
+    "incidents": 0
+  },
+  "data_exporter": {
+    "score": 0,
+    "evaluations": 1,
+    "incidents": 0
+  },
+  "calculate": {
+    "score": 60,
+    "evaluations": 2,
+    "incidents": 0
+  },
+  "log_activity": {
+    "score": 50,
+    "evaluations": 1,
+    "incidents": 0
+  },
+  "create_report": {
+    "score": 26,
+    "evaluations": 4,
+    "incidents": 1
+  },
+  "format_text": {
+    "score": 50,
+    "evaluations": 1,
+    "incidents": 0
+  },
+  "send_email": {
+    "score": 50,
+    "evaluations": 1,
+    "incidents": 0
+  }
+}

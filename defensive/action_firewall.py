@@ -30,6 +30,8 @@ BLOCKED_NETWORK_PATTERNS = [
     r'webhook\.site',
     r'requestbin',
     r'\.ngrok\.io',
+    r'data-collector',
+    r'\.example\.com',
 ]
 
 BLOCKED_SHELL_PATTERNS = [
