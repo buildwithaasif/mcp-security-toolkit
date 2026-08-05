@@ -32,28 +32,37 @@ Now protects AI agents across all capability sources — not just MCP.
 | **Flight Recorder** | Logs every agent decision — what was called, why, and what happened |
 | **Red/Blue Agents** | Autonomous agents that generate attacks and learn to defend against them |
 
+
 ### Architecture
-User's AI Agent
-│
-▼
-┌──────────────────────────┐
-│ MCPSecure v2 │
-│ │
-│ ✓ Scans tool descriptions│
-│ ✓ Blocks malicious tools │
-│ ✓ Verifies trust scores │
-│ ✓ Logs every decision │
-└──────────┬───────────────┘
-│
-▼
-Safe tools only
-│
-▼
-LLM / External Systems
 
-text
-
-**One command. Full protection.**
+```text
+                           ╔══════════════════════╗
+                           ║      AI AGENT        ║
+                           ╚══════════╤═══════════╝
+                                      │
+                                      ▼
+╔════════════════════════════════════════════════════════════════════════════╗
+║                             MCPSecure v2                                 ║
+║                                                                          ║
+║  🛡 Context Firewall      → MCP • AGENTS.md • SKILL.md                   ║
+║                                                                          ║
+║  ⚙ Capability Firewall   → Code Mode • Tool Search • Skills             ║
+║                                                                          ║
+║  🔒 Trust Engine          → Provenance • Integrity • Reputation          ║
+║                                                                          ║
+║  📜 Flight Recorder       → Full Decision Logging                        ║
+╚═══════════════════════════════╤═══════════════════════════════════════════╝
+                                │
+          ┌─────────────────────┼─────────────────────┐
+          │                     │                     │
+          ▼                     ▼                     ▼
+    MCP Servers            Code Mode           Tool Search
+          │                     │                     │
+          └─────────────────────┼─────────────────────┘
+                                │
+                                ▼
+                      External Systems / APIs
+```
 
 
 ## Quick Start
