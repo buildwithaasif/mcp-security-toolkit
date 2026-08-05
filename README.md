@@ -155,6 +155,57 @@ MCPSecure sits between the MCP client and the MCP server, inspecting every tool 
 
 **With MCPSecure:** Tool descriptions are scanned, sanitized, and filtered before the LLM ever sees them.
 
+## MCPSecure v2 — Agent Capability Security (New)
+
+MCPSecure v2 extends protection beyond MCP to cover all agent capability sources.
+
+### What's New
+
+| Component | Description |
+|-----------|-------------|
+| **Capability Firewall** | Blocks dangerous actions from MCP, Code Mode, Tool Search, Skills, and Cross-Agent communication. 10/10 attacks blocked in tests. |
+| **Dynamic Trust Engine** | Continuous trust scoring. Verifies provenance, detects description changes (rug pull), and tracks reputation with incident history. |
+| **Agent Flight Recorder** | Black box for AI agents. Logs every decision with full context — who called what, why, trust score, data flow, and result. Session replay for forensics. |
+
+### Architecture v2
+
+```
+                    AI AGENT
+                        │
+                        ▼
+             ┌─────────────────────┐
+             │      MCPSecure v2   │
+             │                     │
+             │  Context Firewall   │  ← Scans MCP, AGENTS.md, SKILL.md
+             │  Capability Firewall│  ← Blocks Code Mode, Tool Search, Skills
+             │  Trust Engine       │  ← Provenance, integrity, reputation
+             │  Flight Recorder    │  ← Full decision logging
+             └──────────┬──────────┘
+                        │
+        ┌───────────────┼────────────────┐
+        │               │                │
+        ▼               ▼                ▼
+   MCP Servers     Code Mode        Tool Search
+        │               │                │
+        └───────────────┼────────────────┘
+                        │
+                        ▼
+                 External Systems
+```
+
+### Test It
+
+```bash
+# Test Capability Firewall (10 attack sources)
+python test_capability_firewall.py
+
+# Test Trust Engine (rug pull detection)
+python test_trust_engine.py
+
+# Test Flight Recorder (full agent session)
+python test_flight_recorder.py
+```
+
 ## How MCPSecure Stops Common MCP Attacks
 
 MCPSecure detects and blocks multiple classes of MCP attacks before malicious instructions ever reach the LLM.
@@ -222,7 +273,7 @@ python evil_mcp/evil_server.py
 python mcpusecure_connect.py http://127.0.0.1:9000/mcp/
 ```
 
-Blocks malicious tools in real-time before an LLM sees them.
+Blocks malicious tools in real-time before an LLM sees them. Dual-layer: MCP Firewall + Capability Firewall.
 
 ### Scan Instruction Files (AGENTS.md / SKILL.md)
 
@@ -232,6 +283,19 @@ python scan_context.py evil_skill/
 ```
 
 Detects hidden instructions in agent instruction files.
+
+### MCPSecure v2 Tests
+
+```bash
+# Capability Firewall — blocks attacks from Code Mode, Tool Search, Skills, Cross-Agent
+python test_capability_firewall.py
+
+# Dynamic Trust Engine — provenance, integrity, rug pull detection, reputation scoring
+python test_trust_engine.py
+
+# Agent Flight Recorder — full session logging and forensics
+python test_flight_recorder.py
+```
 
 ### Test Action Firewall
 
